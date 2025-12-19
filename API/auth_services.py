@@ -1,14 +1,15 @@
+from datetime import datetime, timedelta, timezone
+import hmac
+import hashlib
+import uuid
+import secrets
 from database import db_dependency
 import bcrypt
 from jose import jwt
 from schemas import User, Refresh_Token
 from fastapi import HTTPException, status
-from datetime import datetime, timedelta, timezone
-from EnvVariables import ACCESS_SECRET_KEY, REFRESH_TOKEN_PEPPER
-import hmac
-import hashlib
-import uuid
-import secrets
+from Environmental_Variables import ACCESS_SECRET_KEY, REFRESH_TOKEN_PEPPER
+
 
 Algorithm = "HS256"
 

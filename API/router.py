@@ -1,3 +1,5 @@
+import uuid
+from datetime import timedelta
 from fastapi import APIRouter, FastAPI
 from auth_services import ValidatePassword, ValidateUsername, Create_Access_Token
 from auth_services import (
@@ -7,9 +9,7 @@ from auth_services import (
 )
 from schemas import LoginRequest, User, RefreshRequest
 from database import db_dependency
-from datetime import timedelta
 import uvicorn
-import uuid
 
 app = FastAPI()
 User_Router = APIRouter(prefix="/users", tags=["Users"])
