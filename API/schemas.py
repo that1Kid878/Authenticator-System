@@ -2,7 +2,6 @@ from sqlalchemy import Column, UUID, Text, Boolean, DateTime, ForeignKey, Intege
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 from pydantic import BaseModel, Field
-from uuid import uuid4
 
 Base = declarative_base()
 
@@ -17,7 +16,7 @@ class User(Base):
 class Refresh_Token(Base):
     __tablename__ = "refresh_tokens"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
+    token_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     user_id = Column(
         Integer,
         ForeignKey("users.user_id", ondelete="CASCADE"), 
@@ -35,3 +34,6 @@ class LoginRequest(BaseModel):
         max_length=20,
         description="Password must be between 12 to 20 characters"
     )
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
