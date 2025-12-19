@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, UUID, Text, Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 from pydantic import BaseModel, Field
+from uuid import uuid4
 
 Base = declarative_base()
 
@@ -16,7 +17,7 @@ class User(Base):
 class Refresh_Token(Base):
     __tablename__ = "refresh_tokens"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     user_id = Column(
         Integer,
         ForeignKey("users.user_id", ondelete="CASCADE"), 
