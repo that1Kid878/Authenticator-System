@@ -8,14 +8,7 @@ from EnvVariables import SECRET_KEY
 
 Algorithm = "HS256"
 
-def HashPassword(password:str):
-    Encoded_Password = password.encode()
-    Salt = bcrypt.gensalt()
-    Hashed_Password = bcrypt.hashpw(Encoded_Password, Salt)
-    return Hashed_Password
-
-def ValidateUsername(username:str, DB:db_dependency):
-    Username = username
+def ValidateUsername(Username:str, DB:db_dependency):
     UserData = DB.query(User).filter(User.username==Username).first()
     if not UserData:
         raise HTTPException(
@@ -25,10 +18,10 @@ def ValidateUsername(username:str, DB:db_dependency):
     return UserData
 
 def ValidatePassword(DB_Password_Hashed:str, Given_Password:str):
-    DB_Password_Hashed = DB_Password_Hashed.encode()
-    Given_Password = Given_Password.encode()
+    DB_Password_Hashed_Encoded = DB_Password_Hashed.encode()
+    Given_Password_Encoded = Given_Password.encode()
     
-    if not bcrypt.checkpw(Given_Password, DB_Password_Hashed):
+    if not bcrypt.checkpw(Given_Password_Encoded, DB_Password_Hashed_Encoded):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -42,7 +35,3 @@ def Create_Access_Token(Username:str, User_ID:int, ExpiryDelta:timedelta):
         'exp': ExpiryDate
     }
     return jwt.encode(Token_Data, SECRET_KEY, Algorithm)
-
-
-    
-    
