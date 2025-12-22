@@ -3,7 +3,7 @@ import hmac
 import hashlib
 import uuid
 import secrets
-from database import db_dependency
+from sqlalchemy.orm import Session
 import bcrypt
 from jose import jwt
 from schemas import User, Refresh_Token
@@ -14,7 +14,7 @@ from Environmental_Variables import ACCESS_SECRET_KEY, REFRESH_TOKEN_PEPPER
 Algorithm = "HS256"
 
 
-def ValidateUsername(Username: str, DB: db_dependency):
+def ValidateUsername(Username: str, DB: Session):
     UserData = DB.query(User).filter(User.username == Username).first()
     if not UserData:
         raise HTTPException(
@@ -53,7 +53,7 @@ def Hash_Refresh_Token(Token: str):
 
 
 def Rotate_Refresh_Token(
-    DB_Token: Refresh_Token, Token: str, New_Token_Id: uuid.UUID, DB: db_dependency
+    DB_Token: Refresh_Token, Token: str, New_Token_Id: uuid.UUID, DB: Session
 ):
     Hashed_Token = Hash_Refresh_Token(Token)
     DB_Token.token_hash = Hashed_Token
@@ -62,7 +62,7 @@ def Rotate_Refresh_Token(
     DB.refresh(DB_Token)
 
 
-def Check_Refresh_Token(Token: str, DB: db_dependency):
+def Check_Refresh_Token(Token: str, DB: Session):
     All_Valid_Refresh_Tokens: list[Refresh_Token] = (
         DB.query(Refresh_Token)
         .filter(Refresh_Token.expires_at > datetime.now(timezone.utc))
@@ -76,3 +76,32 @@ def Check_Refresh_Token(Token: str, DB: db_dependency):
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token invalid"
     )
+
+
+def Check_Valid_User_ID(User_id: int, db: Session):
+    Found = db.query(User).filter(User.user_id == User_id).first()
+    if not Found:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User ID not found in database",
+        )
+
+
+def Create_New_DB_Refresh_Token(User_id: int, ExpiryDelta: timedelta, db: Session):
+    Check_Valid_User_ID(User_id, db)
+
+    Token_id = uuid.uuid4()
+    Token = Create_Refresh_Token(Token_id)
+    Hashed_Token = Hash_Refresh_Token(Token)
+
+    DB_Entry = Refresh_Token()
+    DB_Entry.token_id = Token_id
+    DB_Entry.user_id = User_id
+    DB_Entry.token_hash = Hashed_Token
+    DB_Entry.expires_at = datetime.now(timezone.utc) + ExpiryDelta
+
+    db.add(DB_Entry)
+    db.commit()
+    db.refresh(DB_Entry)
+
+    return Token

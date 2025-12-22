@@ -1,7 +1,12 @@
 import uuid
 from datetime import timedelta
 from fastapi import APIRouter, FastAPI
-from auth_services import ValidatePassword, ValidateUsername, Create_Access_Token
+from auth_services import (
+    ValidatePassword,
+    ValidateUsername,
+    Create_Access_Token,
+    Create_New_DB_Refresh_Token,
+)
 from auth_services import (
     Create_Refresh_Token,
     Check_Refresh_Token,
@@ -20,10 +25,17 @@ AuthN_Router = APIRouter(prefix="/auth", tags=["AuthN"])
 def login(Data: LoginRequest, DB: db_dependency):
     UserData: User = ValidateUsername(Data.username, DB)
     ValidatePassword(UserData.hashed_password, Data.password)
-    ExpiryDelta = timedelta(hours=2)
+    Access_ExpiryDelta = timedelta(hours=2)
+    Refresh_ExpiryDelta = timedelta(days=30)
 
-    Token = Create_Access_Token(Data.username, UserData.user_id, ExpiryDelta)
-    return Token
+    Access_Token = Create_Access_Token(
+        Data.username, UserData.user_id, Access_ExpiryDelta
+    )
+    Refresh_Token = Create_New_DB_Refresh_Token(
+        UserData.user_id, Refresh_ExpiryDelta, DB
+    )
+    output = {"access_token": Access_Token, "refresh_token": Refresh_Token}
+    return output
 
 
 @AuthN_Router.post("/refresh")

@@ -12,7 +12,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     username = Column(Text, nullable=False, index=True)
     hashed_password = Column(Text, nullable=False)
-    created_at = Column(DateTime, server_default=datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
 
 class Refresh_Token(Base):
@@ -25,7 +25,7 @@ class Refresh_Token(Base):
     token_hash = Column(Text, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     revoked = Column(Boolean)
-    created_at = Column(DateTime, server_default=datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
 
 class LoginRequest(BaseModel):
