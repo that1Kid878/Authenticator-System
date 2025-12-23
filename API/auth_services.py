@@ -5,7 +5,7 @@ import uuid
 import secrets
 from sqlalchemy.orm import Session
 import bcrypt
-from jose import jwt
+from jose import jwt, JWTError, ExpiredSignatureError
 from schemas import User, Refresh_Token
 from fastapi import HTTPException, status
 from Environmental_Variables import ACCESS_SECRET_KEY, REFRESH_TOKEN_PEPPER
@@ -38,6 +38,21 @@ def Create_Access_Token(Username: str, User_ID: int, ExpiryDelta: timedelta):
     ExpiryDate = datetime.now(timezone.utc) + ExpiryDelta
     Token_Data = {"sub": Username, "id": User_ID, "exp": ExpiryDate}
     return jwt.encode(Token_Data, ACCESS_SECRET_KEY, Algorithm)
+
+
+def Validate_Access_Token(Token: str):
+    try:
+        payload = jwt.decode(Token, ACCESS_SECRET_KEY, algorithms=[Algorithm])
+    except ExpiredSignatureError as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token expired"
+        ) from error
+    except JWTError as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token invalid"
+        ) from error
+
+    return payload
 
 
 def Create_Refresh_Token(Token_id: uuid.UUID):

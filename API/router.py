@@ -1,21 +1,22 @@
 import uuid
 from datetime import timedelta
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Depends
+from fastapi.security import OAuth2PasswordBearer
 from auth_services import (
     ValidatePassword,
     ValidateUsername,
     Create_Access_Token,
+    Validate_Access_Token,
     Create_New_DB_Refresh_Token,
-)
-from auth_services import (
     Create_Refresh_Token,
     Check_Refresh_Token,
     Rotate_Refresh_Token,
 )
-from schemas import LoginRequest, User, RefreshRequest
+from schemas import LoginRequest, User, RefreshRequest, LogoutRequest
 from database import db_dependency
 import uvicorn
 
+OAuth2_Scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 app = FastAPI()
 User_Router = APIRouter(prefix="/users", tags=["Users"])
 AuthN_Router = APIRouter(prefix="/auth", tags=["AuthN"])
@@ -36,6 +37,17 @@ async def login(Data: LoginRequest, DB: db_dependency):
     )
     output = {"access_token": Access_Token, "refresh_token": Refresh_Token}
     return output
+
+
+@AuthN_Router.post("/logout")
+async def logout(
+    Data: LogoutRequest, DB: db_dependency, Token: str = Depends(OAuth2_Scheme)
+):
+    Validate_Access_Token(Token)
+    DB_Refresh_Token = Check_Refresh_Token(Data.refresh_token, DB)
+    DB_Refresh_Token.revoked = True
+    DB.commit()
+    DB.refresh(DB_Refresh_Token)
 
 
 @AuthN_Router.post("/refresh")
