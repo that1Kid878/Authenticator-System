@@ -22,7 +22,7 @@ AuthN_Router = APIRouter(prefix="/auth", tags=["AuthN"])
 
 
 @AuthN_Router.post("/login")
-def login(Data: LoginRequest, DB: db_dependency):
+async def login(Data: LoginRequest, DB: db_dependency):
     UserData: User = ValidateUsername(Data.username, DB)
     ValidatePassword(UserData.hashed_password, Data.password)
     Access_ExpiryDelta = timedelta(hours=2)
@@ -39,7 +39,7 @@ def login(Data: LoginRequest, DB: db_dependency):
 
 
 @AuthN_Router.post("/refresh")
-def RefreshToken(Data: RefreshRequest, DB: db_dependency):
+async def RefreshToken(Data: RefreshRequest, DB: db_dependency):
     Existing_Token = Check_Refresh_Token(Data.refresh_token, DB)
     UserData = DB.query(User).filter(User.user_id == Existing_Token.user_id).first()
     Access_Token = Create_Access_Token(
