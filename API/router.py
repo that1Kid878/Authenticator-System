@@ -11,8 +11,9 @@ from auth_services import (
     Create_Refresh_Token,
     Check_Refresh_Token,
     Rotate_Refresh_Token,
+    Create_User,
 )
-from schemas import LoginRequest, User, Refresh_Token_Schema
+from schemas import Username_Password_Schema, User, Refresh_Token_Schema
 from database import db_dependency
 import uvicorn
 
@@ -23,7 +24,7 @@ AuthN_Router = APIRouter(prefix="/auth", tags=["AuthN"])
 
 
 @AuthN_Router.post("/login")
-async def login(Data: LoginRequest, DB: db_dependency):
+async def login(Data: Username_Password_Schema, DB: db_dependency):
     UserData: User = ValidateUsername(Data.username, DB)
     ValidatePassword(UserData.hashed_password, Data.password)
     Access_ExpiryDelta = timedelta(hours=2)
@@ -66,7 +67,16 @@ async def RefreshToken(Data: Refresh_Token_Schema, DB: db_dependency):
     return output
 
 
+@User_Router.post("/signup", status_code=201)
+async def SignUp(Data: Username_Password_Schema, DB: db_dependency):
+    Username = Data.username
+    Password = Data.password
+    output = Create_User(Username, Password, DB)
+    return output
+
+
 app.include_router(AuthN_Router)
+app.include_router(User_Router)
 
 # Run server
 if __name__ == "__main__":

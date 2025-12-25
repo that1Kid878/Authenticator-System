@@ -28,7 +28,7 @@ class Refresh_Token(Base):
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
 
-class LoginRequest(BaseModel):
+class Username_Password_Schema(BaseModel):
     username: str
     password: str = Field(
         min_length=12,

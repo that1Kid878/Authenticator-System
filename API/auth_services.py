@@ -14,6 +14,11 @@ from Environmental_Variables import ACCESS_SECRET_KEY, REFRESH_TOKEN_PEPPER
 Algorithm = "HS256"
 
 
+def Hash_String(String: str):
+    output = bcrypt.hashpw(String.encode(), bcrypt.gensalt())
+    return output.decode()
+
+
 def ValidateUsername(Username: str, DB: Session):
     UserData = DB.query(User).filter(User.username == Username).first()
     if not UserData:
@@ -22,6 +27,23 @@ def ValidateUsername(Username: str, DB: Session):
             detail="Username not found in database",
         )
     return UserData
+
+
+def Create_User(Username: str, Password: str, DB: Session):
+    if DB.query(User).filter(User.username == Username).first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Username taken"
+        )
+
+    DB_Entry = User()
+    DB_Entry.username = Username
+    DB_Entry.hashed_password = Hash_String(Password)
+
+    DB.add(DB_Entry)
+    DB.commit()
+    DB.refresh(DB_Entry)
+
+    return DB_Entry
 
 
 def ValidatePassword(DB_Password_Hashed: str, Given_Password: str):
