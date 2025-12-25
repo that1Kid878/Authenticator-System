@@ -37,9 +37,5 @@ class LoginRequest(BaseModel):
     )
 
 
-class LogoutRequest(BaseModel):
-    refresh_token: str
-
-
-class RefreshRequest(BaseModel):
+class Refresh_Token_Schema(BaseModel):
     refresh_token: str

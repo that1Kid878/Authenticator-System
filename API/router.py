@@ -12,7 +12,7 @@ from auth_services import (
     Check_Refresh_Token,
     Rotate_Refresh_Token,
 )
-from schemas import LoginRequest, User, RefreshRequest, LogoutRequest
+from schemas import LoginRequest, User, Refresh_Token_Schema
 from database import db_dependency
 import uvicorn
 
@@ -41,7 +41,7 @@ async def login(Data: LoginRequest, DB: db_dependency):
 
 @AuthN_Router.post("/logout")
 async def logout(
-    Data: LogoutRequest, DB: db_dependency, Token: str = Depends(OAuth2_Scheme)
+    Data: Refresh_Token_Schema, DB: db_dependency, Token: str = Depends(OAuth2_Scheme)
 ):
     Validate_Access_Token(Token)
     DB_Refresh_Token = Check_Refresh_Token(Data.refresh_token, DB)
@@ -51,7 +51,7 @@ async def logout(
 
 
 @AuthN_Router.post("/refresh")
-async def RefreshToken(Data: RefreshRequest, DB: db_dependency):
+async def RefreshToken(Data: Refresh_Token_Schema, DB: db_dependency):
     Existing_Token = Check_Refresh_Token(Data.refresh_token, DB)
     UserData = DB.query(User).filter(User.user_id == Existing_Token.user_id).first()
     Access_Token = Create_Access_Token(
