@@ -144,3 +144,8 @@ def Create_New_DB_Refresh_Token(User_id: int, ExpiryDelta: timedelta, db: Sessio
     db.refresh(DB_Entry)
 
     return Token
+
+
+def Refine_User_Data(Userdata: User):
+    output = {"ID": Userdata.user_id, "Username": Userdata.username}
+    return output

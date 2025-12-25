@@ -13,6 +13,7 @@ from auth_services import (
     Rotate_Refresh_Token,
     Create_User,
     Validate_User_ID,
+    Refine_User_Data,
 )
 from schemas import Username_Password_Schema, User, Refresh_Token_Schema
 from database import db_dependency
@@ -72,8 +73,16 @@ async def RefreshToken(Data: Refresh_Token_Schema, DB: db_dependency):
 async def SignUp(Data: Username_Password_Schema, DB: db_dependency):
     Username = Data.username
     Password = Data.password
-    output = Create_User(Username, Password, DB)
-    return output
+    UserData = Create_User(Username, Password, DB)
+    return Refine_User_Data(UserData)
+
+
+@User_Router.get("/me")
+async def GetUser(DB: db_dependency, Token: str = Depends(OAuth2_Scheme)):
+    Payload = Validate_Access_Token(Token)
+    User_ID = Payload["id"]
+    UserData = Validate_User_ID(User_ID, DB)
+    return Refine_User_Data(UserData)
 
 
 @User_Router.delete("/signout")
