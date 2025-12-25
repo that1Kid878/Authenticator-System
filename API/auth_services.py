@@ -115,7 +115,7 @@ def Check_Refresh_Token(Token: str, DB: Session):
     )
 
 
-def Check_Valid_User_ID(User_id: int, db: Session):
+def Validate_User_ID(User_id: int, db: Session):
     Found = db.query(User).filter(User.user_id == User_id).first()
     if not Found:
         raise HTTPException(
@@ -123,9 +123,11 @@ def Check_Valid_User_ID(User_id: int, db: Session):
             detail="User ID not found in database",
         )
 
+    return Found
+
 
 def Create_New_DB_Refresh_Token(User_id: int, ExpiryDelta: timedelta, db: Session):
-    Check_Valid_User_ID(User_id, db)
+    Validate_User_ID(User_id, db)
 
     Token_id = uuid.uuid4()
     Token = Create_Refresh_Token(Token_id)

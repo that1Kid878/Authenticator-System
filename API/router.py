@@ -12,6 +12,7 @@ from auth_services import (
     Check_Refresh_Token,
     Rotate_Refresh_Token,
     Create_User,
+    Validate_User_ID,
 )
 from schemas import Username_Password_Schema, User, Refresh_Token_Schema
 from database import db_dependency
@@ -73,6 +74,17 @@ async def SignUp(Data: Username_Password_Schema, DB: db_dependency):
     Password = Data.password
     output = Create_User(Username, Password, DB)
     return output
+
+
+@User_Router.delete("/signout")
+async def SignOut(DB: db_dependency, Token: str = Depends(OAuth2_Scheme)):
+    Payload = Validate_Access_Token(Token)
+    User_ID = Payload["id"]
+    UserData = Validate_User_ID(User_ID, DB)
+    DB.delete(UserData)
+    DB.commit()
+
+    return {"detail": "Deletion successful"}
 
 
 app.include_router(AuthN_Router)
