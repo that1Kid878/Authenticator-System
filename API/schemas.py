@@ -39,3 +39,12 @@ class Username_Password_Schema(BaseModel):
 
 class Refresh_Token_Schema(BaseModel):
     refresh_token: str
+
+
+class Change_Password_Schema(BaseModel):
+    old_password: str
+    new_password: str = Field(
+        min_length=12,
+        max_length=20,
+        description="Password must be between 12 to 20 characters",
+    )

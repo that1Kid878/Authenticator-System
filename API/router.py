@@ -14,8 +14,14 @@ from auth_services import (
     Create_User,
     Validate_User_ID,
     Refine_User_Data,
+    Hash_String,
 )
-from schemas import Username_Password_Schema, User, Refresh_Token_Schema
+from schemas import (
+    Username_Password_Schema,
+    User,
+    Refresh_Token_Schema,
+    Change_Password_Schema,
+)
 from database import db_dependency
 import uvicorn
 
@@ -83,6 +89,21 @@ async def GetUser(DB: db_dependency, Token: str = Depends(OAuth2_Scheme)):
     User_ID = Payload["id"]
     UserData = Validate_User_ID(User_ID, DB)
     return Refine_User_Data(UserData)
+
+
+@User_Router.put("/password")
+async def Change_Password(
+    Data: Change_Password_Schema, DB: db_dependency, Token: str = Depends(OAuth2_Scheme)
+):
+    Payload = Validate_Access_Token(Token)
+    UserData = Validate_User_ID(Payload["id"], DB)
+    ValidatePassword(UserData.hashed_password, Data.old_password)
+
+    Hashed_New_Password = Hash_String(Data.new_password)
+    DB_User = DB.query(User).filter(User.user_id == Payload["id"]).first()
+    DB_User.hashed_password = Hashed_New_Password
+    DB.commit()
+    DB.refresh(DB_User)
 
 
 @User_Router.delete("/signout")
