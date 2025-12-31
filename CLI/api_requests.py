@@ -10,7 +10,7 @@ def Proccessed_Request_Results(
     Returnable_Response_Variable: dict = Response.json()
     if Response.status_code != default_status_code:
         return {"Error": Returnable_Response_Variable.get("details", Response.reason)}
-    return Returnable_Response_Variable
+    return Returnable_Response_Variable if Returnable_Response_Variable else {}
 
 
 def SignUp(Username: str, Password: str):

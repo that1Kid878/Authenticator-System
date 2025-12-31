@@ -16,8 +16,12 @@ def Get_Refresh_Token():
     return keyring.get_password("AuthN-CLI", "refresh_token")
 
 
-def Delete_Tokens(Access_Token: str | None = None, Refresh_Token: str | None = None):
+def Delete_Tokens(Access_Token: bool, Refresh_Token: bool):
     if Access_Token:
         keyring.delete_password("AuthN-CLI", "access_token")
     if Refresh_Token:
         keyring.delete_password("AuthN-CLI", "refresh_token")
+
+
+if __name__ == "__main__":
+    Delete_Tokens(True, True)
