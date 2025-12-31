@@ -1,6 +1,5 @@
 import requests
-
-# import json
+from json import dumps as jsonify
 
 link = "http://127.0.0.1:8000"
 
@@ -16,7 +15,7 @@ def Proccessed_Request_Results(
 
 def SignUp(Username: str, Password: str):
     data = {"username": Username, "password": Password}
-    result = requests.post(url=f"{link}/users/signup", data=data)
+    result = requests.post(url=f"{link}/users/signup", data=jsonify(data, indent=4))
     return Proccessed_Request_Results(result, 201)
 
 
@@ -29,7 +28,9 @@ def SignOut(Access_Token: str):
 def ChangePassword(Old_Password: str, New_Password: str, Access_Token: str):
     headers = {"Authorization": f"Bearer {Access_Token}"}
     data = {"old_password": Old_Password, "new_password": New_Password}
-    result = requests.put(url=f"{link}/users/password", headers=headers, data=data)
+    result = requests.put(
+        url=f"{link}/users/password", headers=headers, data=jsonify(data, indent=4)
+    )
     return Proccessed_Request_Results(result)
 
 
@@ -41,18 +42,20 @@ def GetUser(Access_Token: str):
 
 def Login(Username: str, Password: str):
     data = {"username": Username, "password": Password}
-    result = requests.post(url=f"{link}/auth/login", data=data)
+    result = requests.post(url=f"{link}/auth/login", data=jsonify(data, indent=4))
     return Proccessed_Request_Results(result)
 
 
 def Logout(Access_Token: str, Refresh_Token: str):
     headers = {"Authorization": f"Bearer {Access_Token}"}
     data = {"refresh_token": Refresh_Token}
-    result = requests.post(url=f"{link}/auth/logout", data=data, headers=headers)
+    result = requests.post(
+        url=f"{link}/auth/logout", data=jsonify(data, indent=4), headers=headers
+    )
     return Proccessed_Request_Results(result)
 
 
 def Use_Refresh_Token(Refresh_Token: str):
     data = {"refresh_token": Refresh_Token}
-    result = requests.post(url=f"{link}/auth/refresh", data=data)
+    result = requests.post(url=f"{link}/auth/refresh", data=jsonify(data, indent=4))
     return Proccessed_Request_Results(result)
