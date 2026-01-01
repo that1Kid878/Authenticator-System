@@ -14,6 +14,16 @@ def Valid_Refresh_Token():
     return True
 
 
+def Handle_Unauthorized_Access_Tokens(Response: dict, func: Callable, args: str = ""):
+    if Response.get("Error") == "Unauthorized":
+        if Valid_Refresh_Token():
+            func(args)
+        else:
+            print(colored("Please log in again", "red"))
+    elif Response.get("Error"):
+        print(colored(Response["Error"], "red"))
+
+
 class TaskShell(cmd.Cmd):
     intro = "Welcome to the authentication system, key 'help' for list of commands"
     prompt = "<AuthN> "
@@ -23,6 +33,7 @@ class TaskShell(cmd.Cmd):
         Access_Token = storage.Get_Access_Token()
         if Access_Token is not None:
             print(colored("You are already logged in", "yellow"))
+            return
         Username = input("Username: ")
         Password = input("Password: ")
         Response = api_requests.Login(Username, Password)
@@ -107,16 +118,6 @@ class TaskShell(cmd.Cmd):
         if not Response.get("Error"):
             storage.Delete_Tokens(True, True)
             print(colored("Logout successful", "green"))
-
-
-def Handle_Unauthorized_Access_Tokens(Response: dict, func: Callable, args: str = ""):
-    if Response.get("Error") == "Unauthorized":
-        if Valid_Refresh_Token():
-            func(args)
-        else:
-            print(colored("Please log in again", "red"))
-    elif Response.get("Error"):
-        print(colored(Response["Error"], "red"))
 
 
 if __name__ == "__main__":
