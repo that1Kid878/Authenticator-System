@@ -62,9 +62,12 @@ class TaskShell(cmd.Cmd):
         """use 'change password' to change password"""
         if args != "password":
             return
+        Access_Token = storage.Get_Access_Token()
+        if Access_Token is None:
+            print(colored("Please log in again", "red"))
+            return
         Old_Password = input("Current Password: ")
         New_Password = input("New Password: ")
-        Access_Token = storage.Get_Access_Token()
         Response = api_requests.ChangePassword(Old_Password, New_Password, Access_Token)
         Handle_Unauthorized_Access_Tokens(Response, self.do_change, "password")
 
